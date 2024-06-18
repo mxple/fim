@@ -1,0 +1,12 @@
+#version 330 core
+
+uniform float uTime;
+
+in vec2 uv;
+
+out vec4 Color;
+
+void main()
+{
+	Color = vec4(1.0f, 1.0f, 1.0f, cos(uTime));
+}
