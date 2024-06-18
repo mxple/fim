@@ -182,6 +182,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5443807d6dff69373d433ab9ef5378ad8df50ca6298caf15de6e52e24aaf54d5"
 
 [[package]]
+name = "fim"
+version = "0.1.0"
+dependencies = [
+ "font-kit",
+ "freetype-rs",
+ "gl",
+ "glam",
+ "rand",
+ "sdl2",
+ "syntect",
+]
+
+[[package]]
 name = "flate2"
 version = "1.0.30"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -743,19 +756,6 @@ name = "version-compare"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "579a42fc0b8e0c63b76519a339be31bed574929511fa53c1a3acae26eb258f29"
-
-[[package]]
-name = "viw"
-version = "0.1.0"
-dependencies = [
- "font-kit",
- "freetype-rs",
- "gl",
- "glam",
- "rand",
- "sdl2",
- "syntect",
-]
 
 [[package]]
 name = "walkdir"

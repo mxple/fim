@@ -85,7 +85,7 @@ impl Line {
         let start = range.start_bound();
         let new_start = match start {
             std::ops::Bound::Included(&n) => {
-                let offset = self.content.char_indices().nth(n).unwrap().0;
+                let offset = self.content.char_indices().nth(n).unwrap_or((0, 0 as char)).0;
                 std::ops::Bound::Included(offset)
             }
             std::ops::Bound::Excluded(&n) => {
@@ -293,6 +293,7 @@ impl Buffer {
         if !move_cursor {
             self.move_cursor_by(0, amount as isize, true);
         }
+        self.move_cursor_by(0, 0, true);
     }
 
     pub fn insert_lines(&mut self, amount: usize, move_cursor: bool) {
