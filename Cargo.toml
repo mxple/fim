@@ -1,0 +1,18 @@
+[package]
+name = "fim"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+font-kit = "0.13.2"
+# freetype-rs = "0.36.0"
+freetype-rs = { path = "../freetype-rs" }
+gl = "0.14.0"
+glam = "0.28.0"
+rand = "0.8.5"
+# sdl2 = { version = "0.36.0", features = ["static-link", "bundled", "use-pkgconfig"] }
+sdl2 = { version = "0.36.0" }
+syntect = "5.2.0"
+
+# sdl2 = { version = "0.36.0", features = ["static-link"] }
+# sdl2-sys = { version = "0.34.5", features = ["sdl2main"] }
