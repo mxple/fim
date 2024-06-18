@@ -5,7 +5,7 @@ Note, Fim is currently in pre-alpha and is more of a tech demo than anything. It
 
 ## Features
 An expanding list of cool features:
-- Resolution independent GPU text rendering using bezier curves (credit for (algorithm)[https://wdobbie.com/post/gpu-text-rendering-with-vector-textures/] and (shader code)[https://github.com/GreenLightning/gpu-font-rendering?tab=MIT-1-ov-file#readme])
+- Resolution independent GPU text rendering using bezier curves (credit for [algorithm](https://wdobbie.com/post/gpu-text-rendering-with-vector-textures/) and [shader code](https://github.com/GreenLightning/gpu-font-rendering?tab=MIT-1-ov-file#readme))
 - Built-in Vi/m navigation (WIP)
 - Lazy font loading using system fonts
 - Semi-support for Unicode characters (support for individual characters, not grapheme clusters)
@@ -13,13 +13,13 @@ An expanding list of cool features:
 - Neovide-like cursor trail
 
 ## Building
-Fim uses a patched version of `freetype-rs` which can be found (here)[https://github.com/mxple/freetype-rs/tree/master]. You will need to clone this, and the patched freetype library, then modify `Cargo.toml` accordingly to build. Aside from the patch, just run:
+Fim uses a patched version of `freetype-rs` which can be found [here](https://github.com/mxple/freetype-rs/tree/master). You will need to clone this, and the patched freetype library, then modify `Cargo.toml` accordingly to build. Aside from the patch, just run:
 ```
 $ git clone https://github.com/mxple/fim
 $ cd fim
 $ cargo r --release
 ```
-If you get errors regarding SDL2, refer to (rust-sdl2 docs)[https://github.com/Rust-SDL2/rust-sdl2].
+If you get errors regarding SDL2, refer to [rust-sdl2 docs](https://github.com/Rust-SDL2/rust-sdl2).
 
 If errors persist, please open an issue. I want Fim to work cross platform and be easy to use :)
 
