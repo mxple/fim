@@ -1,5 +1,5 @@
 # Fim
-Text editing has never been more fun. [F]ancy V[im] is a semi-ironic graphical text editor for the postmodern era. Fim combines playful colors and eyecandy with the familiar navigation of Vi/m. While not meant to be used seriously (unless you really want to), Fim aims to (eventually) support advanced text editing features such as syntax highlighting and regex search. While other text editors aim to booost your productivity and workflow, Fim prioritizes something more important --- **dopamine**.
+Text editing has never been more fun. [F]ancy V[im] is a semi-ironic graphical text editor for the postmodern era. Fim combines playful colors and eyecandy with the familiar navigation of Vi/m. While not meant to be used seriously (unless you really want to), Fim aims to (eventually) support advanced text editing features such as syntax highlighting and regex search. While other text editors aim to boost your productivity and workflow, Fim prioritizes something more important --- **dopamine**.
 
 Note, Fim is currently in pre-alpha and is more of a tech demo than anything. It can't even write to the file system yet (so don't be afraid to test it).
 
@@ -33,4 +33,4 @@ Pull requests are appreciated! Especailly those that check off the todolist.
 ## Screenshots
 ![2024-06-18-212814_hyprshot](https://github.com/mxple/fim/assets/83033020/eba72f1b-fdc3-48b6-b4b6-418619908db8)
 ![2024-06-17-165616_hyprshot](https://github.com/mxple/fim/assets/83033020/6792ede3-40d8-4d82-bae2-f4c1263b545d)
-https://github.com/mxple/fim/assets/83033020/57495d11-1915-4375-ab59-2c1d6f85fc30
+[video demo](https://github.com/mxple/fim/assets/83033020/57495d11-1915-4375-ab59-2c1d6f85fc3)
