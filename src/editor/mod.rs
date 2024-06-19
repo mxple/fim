@@ -1,9 +1,6 @@
 use std::{env, path::PathBuf};
 
-use sdl2::{
-    keyboard::{Keycode, Mod},
-    sys::SDL_Keymod,
-};
+use sdl2::keyboard::{Keycode, Mod};
 
 pub mod buffer;
 
@@ -208,13 +205,12 @@ impl Editor {
 
 // false does not mean uppercase
 fn is_lower(keymod: Mod) -> bool {
-    ((keymod.intersects(Mod::CAPSMOD)) && is_shift(keymod - Mod::CAPSMOD))
-        || keymod == Mod::NOMOD
+    ((keymod.intersects(Mod::CAPSMOD)) && is_shift(keymod - Mod::CAPSMOD)) || keymod == Mod::NOMOD
 }
 
 // false does not mean lowercase
 fn is_upper(keymod: Mod) -> bool {
-     is_shift(keymod) || keymod == Mod::CAPSMOD
+    is_shift(keymod) || keymod == Mod::CAPSMOD
 }
 
 // only shift
@@ -226,21 +222,16 @@ fn is_shift(keymod: Mod) -> bool {
 
 // only ctrl
 fn is_ctrl(keymod: Mod) -> bool {
-    keymod == Mod::LCTRLMOD
-        || keymod == Mod::RCTRLMOD
-        || keymod == (Mod::RCTRLMOD & Mod::LCTRLMOD)
+    keymod == Mod::LCTRLMOD || keymod == Mod::RCTRLMOD || keymod == (Mod::RCTRLMOD & Mod::LCTRLMOD)
 }
 
 // only alt
 fn is_alt(keymod: Mod) -> bool {
-    keymod == Mod::LALTMOD
-        || keymod == Mod::RALTMOD
-        || keymod == (Mod::RALTMOD & Mod::LALTMOD)
+    keymod == Mod::LALTMOD || keymod == Mod::RALTMOD || keymod == (Mod::RALTMOD & Mod::LALTMOD)
 }
 
 // shift + ctrl only (no super alt or whatev)
 fn is_shift_ctrl(keymod: Mod) -> bool {
-    is_shift(keymod & !( Mod::LCTRLMOD | Mod::RCTRLMOD ))
-        || is_ctrl(keymod & !( Mod::LSHIFTMOD | Mod::RSHIFTMOD ))
-
+    is_shift(keymod & !(Mod::LCTRLMOD | Mod::RCTRLMOD))
+        || is_ctrl(keymod & !(Mod::LSHIFTMOD | Mod::RSHIFTMOD))
 }

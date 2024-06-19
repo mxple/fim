@@ -5,7 +5,7 @@ use syntect::highlighting::{ThemeSet, Style};
 use syntect::util::{as_24_bit_terminal_escaped, LinesWithEndings};
 
 use editor::Editor;
-use renderer::{camera::Camera, cursor_renderer::CursorRenderer, text_renderer::TextRenderer, Renderer};
+use renderer::{camera::Camera, cursor_renderer::CursorRenderer, text_renderer::TextRenderer, primitive_renderer::PrimitiveRenderer};
 use sdl2::rect::Rect;
 extern crate freetype as ft;
 extern crate gl;
@@ -17,6 +17,8 @@ pub mod renderer;
 static START_TIME: LazyLock<Instant> = LazyLock::new(|| Instant::now());
 
 fn main() {
+    let _ = *START_TIME;
+
     let args: Vec<String> = env::args().collect();
     let no_path = String::from("");
     let file_path = args.get(1).unwrap_or(&no_path);
@@ -24,6 +26,19 @@ fn main() {
     // load sdl + gl
     let sdl_context = sdl2::init().unwrap();
     let video_subsystem = sdl_context.video().unwrap();
+    //
+    // set up window + context
+    let window = video_subsystem
+        .window("fim", 1200, 800)
+        .opengl()
+        .resizable()
+        .build()
+        .unwrap();
+
+    let _gl_context = window.gl_create_context().unwrap();
+    gl::load_with(|name| video_subsystem.gl_get_proc_address(name) as *const _);
+
+    video_subsystem.gl_set_swap_interval(1).unwrap();
     video_subsystem.text_input().start();
     video_subsystem
         .text_input()
@@ -35,27 +50,15 @@ fn main() {
     gl_attr.set_double_buffer(true); // Enable double buffering
     gl_attr.set_multisample_buffers(1); // Enable multisampling if desired
 
-    let _ = *START_TIME;
-    
-// Load these once at the start of your program
-let ps = SyntaxSet::load_defaults_newlines();
-let ts = ThemeSet::load_defaults();
 
-    // set up window + context
-    let window = video_subsystem
-        .window("fim", 1200, 800)
-        .opengl()
-        .resizable()
-        .build()
-        .unwrap();
 
-    let gl_context = window.gl_create_context().unwrap();
-    gl::load_with(|name| video_subsystem.gl_get_proc_address(name) as *const _);
+    // let display_mode = video_subsystem.current_display_mode(0).unwrap();
+    // let sw2 = display_mode.w / 2;
+    // let sh2 = display_mode.h / 2;
 
-    video_subsystem.gl_set_swap_interval(1).unwrap();
-    let display_mode = video_subsystem.current_display_mode(0).unwrap();
-    let sw2 = display_mode.w / 2;
-    let sh2 = display_mode.h / 2;
+    // load these once at the start of your program
+    let ps = SyntaxSet::load_defaults_newlines();
+    let ts = ThemeSet::load_defaults();
 
     // load renderer(s)
     // let mut r2d = Renderer::new();
@@ -87,39 +90,27 @@ let ts = ThemeSet::load_defaults();
             match event {
                 sdl2::event::Event::Quit { .. } => break 'main_loop,
                 sdl2::event::Event::TextInput {
-                    timestamp: _,
-                    window_id: _,
                     text,
+                    ..
                 } => {
                     editor.handle_text_input(&text);
                 }
                 sdl2::event::Event::KeyDown {
-                    timestamp: _,
-                    window_id: _,
                     keycode,
-                    scancode: _,
                     keymod,
-                    repeat: _,
+                    ..
                 } => {
                     editor.handle_keypress(keycode.unwrap(), keymod, &mut skip_events);
                 }
                 sdl2::event::Event::MouseWheel {
-                    timestamp: _,
-                    window_id: _,
-                    which: _,
-                    x: _,
-                    y: _,
-                    direction: _,
-                    precise_x: _,
-                    precise_y,
+                    precise_y, ..
                 } => {
                     cam_z += cam_z * precise_y * 0.1;
                     camera.update_view();
                 }
                 sdl2::event::Event::Window {
-                    timestamp: _,
-                    window_id: _,
                     win_event,
+                    ..
                 } => {
                     match win_event {
                         sdl2::event::WindowEvent::Resized(w, h) => {
@@ -139,17 +130,9 @@ let ts = ThemeSet::load_defaults();
         // camera.set_perspective(3.14 / 4., ww as f32 / wh as f32);
 
         // print!("\x1b[2J\x1b[H");
-
-// let syntax = ps.find_syntax_by_extension("c").unwrap();
-// let mut h = HighlightLines::new(syntax, &ts.themes["base16-ocean.dark"]);
-// let s = editor.get_text();
-// for line in LinesWithEndings::from(&s) {
-//     let ranges: Vec<(Style, &str)> = h.highlight_line(line, &ps).unwrap();
-//     let escaped = as_24_bit_terminal_escaped(&ranges[..], true);
-//     print!("{}", escaped);
-// }
         // print!("{}", editor.buffers.curr_buffer());
         txr.begin_scene();
+        // portal effect
         // let (x, y, w, h) = txr.draw_text(
         //     -win_x as f32 / sh2 as f32 * 8.,
         //     win_y as f32 / sh2 as f32 * 8.,
