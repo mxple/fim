@@ -96,7 +96,8 @@ vec2 rotate(vec2 v) {
 void main() {
     float alpha = 0;
 
-    vec2 inverseDiameter = 1.0 / (1.0 * fwidth(uv));
+    vec2 diameter = fwidth(uv);
+    vec2 inverseDiameter = 1.0 / diameter;
 
     for (int i = 0; i < count; i++) {
         Curve curve = curves[start + i];
@@ -109,28 +110,41 @@ void main() {
         alpha -= computeCoverage(inverseDiameter.y, rotate(p0), rotate(p1), rotate(p2));
     }
 
+//     for (int i = 0; i < count; i++) {
+//         Curve curve = curves[start + i];
+//
+//         vec2 p0 = curve.p0 - uv;
+//         vec2 p1 = curve.p1 - uv;
+//         vec2 p2 = curve.p2 - uv;
+//
+//         p0.y -= diameter.y / 4.;
+//         p1.y -= diameter.y / 4.;
+//         p2.y -= diameter.y / 4.;
+//         alpha -= computeCoverage(inverseDiameter.x, p0, p1, p2);
+//
+//         p0.y += diameter.y / 2.;
+//         p1.y += diameter.y / 2.;
+//         p2.y += diameter.y / 2.;
+//         alpha -= computeCoverage(inverseDiameter.x, p0, p1, p2);
+//
+//         p0.y -= diameter.y / 4.;
+//         p1.y -= diameter.y / 4.;
+//         p2.y -= diameter.y / 4.;
+//         p0 = rotate(p0);
+//         p1 = rotate(p1);
+//         p2 = rotate(p2);
+//
+//         p0.x -= diameter.x / 4.;
+//         p1.x -= diameter.x / 4.;
+//         p2.x -= diameter.x / 4.;
+//         alpha -= computeCoverage(inverseDiameter.y, p0, p1, p2);
+//
+//         p0.x += diameter.x / 2.;
+//         p1.x += diameter.x / 2.;
+//         p2.x += diameter.x / 2.;
+//         alpha -= computeCoverage(inverseDiameter.y, p0, p1, p2);
+//     }
     vec4 color = transColor(uTime);
     alpha = clamp(0.5 * alpha, 0.0, 1.0);
     result = color * alpha;
-    // result = rainbowColor * alpha;
-
-    // vec2 fw = fwidth(uv);
-    // float r = 2.0 * 0.5 * (fw.x + fw.y);
-    // for (int i = 0; i < count; i++) {
-    // 	Curve curve = curves[start + i];
-    //
-    // 	vec2 p0 = curve.p0 - uv;
-    // 	vec2 p1 = curve.p1 - uv;
-    // 	vec2 p2 = curve.p2 - uv;
-    //
-    // 	if (dot(p0, p0) < r*r || dot(p2, p2) < r*r) {
-    // 		result = vec4(0, 1, 0, 1);
-    // 		return;
-    // 	}
-    //
-    // 	if (dot(p1, p1) < r*r) {
-    // 		result = vec4(1, 0, 1, 1);
-    // 		return;
-    // 	}
-    // }
 }
