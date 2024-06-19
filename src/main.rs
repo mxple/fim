@@ -1,4 +1,7 @@
 use std::{env, io, sync::LazyLock, time::Instant};
+use circular_buffer::CircularBuffer;
+use glam::Vec2Swizzles;
+use sdl2::libc::sleep;
 use syntect::easy::HighlightLines;
 use syntect::parsing::SyntaxSet;
 use syntect::highlighting::{ThemeSet, Style};
@@ -48,7 +51,8 @@ fn main() {
     gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
     gl_attr.set_context_version(4, 6);
     gl_attr.set_double_buffer(true); // Enable double buffering
-    gl_attr.set_multisample_buffers(1); // Enable multisampling if desired
+    // gl_attr.set_multisample_buffers(1); // Enable multisampling if desired
+    // gl_attr.set_multisample_samples(16);
 
 
 
@@ -61,7 +65,7 @@ fn main() {
     let ts = ThemeSet::load_defaults();
 
     // load renderer(s)
-    // let mut r2d = Renderer::new();
+    let mut r2d = PrimitiveRenderer::new();
     let mut txr = TextRenderer::new("Free Mono");
     let mut cur = CursorRenderer::new();
 
@@ -74,6 +78,7 @@ fn main() {
     // load editor
     let mut editor = Editor::new(file_path);
 
+    
     let mut cursor_prev: (f32, f32) = (0., 0.);
     let mut cam_z = 20.;
 
@@ -146,7 +151,7 @@ fn main() {
 
         cursor_prev = cur.draw_cursor_at(x, y - 0.2, w, h, cursor_prev.0, cursor_prev.1);
 
-        let orig = glam::Vec3::new(x + w / 2., y + h / 2. - 0.2, 0.);
+        let orig = glam::Vec3::new(x + w / 2., y + h / 4., 0.);
 
         // camera.pos.x -= (camera.pos.x - (orig.x + (win_x  as f32 + ww as f32/2.)/aspect)) * 0.03;
         camera.pos.x -= (camera.pos.x - orig.x) * 0.03;
@@ -162,13 +167,12 @@ fn main() {
         camera.update_view();
 
         unsafe {
+            gl::ClearColor(0., 0., 0., 0.0);
+            gl::Clear(gl::COLOR_BUFFER_BIT);
+
             gl::Enable(gl::BLEND);
             gl::BlendEquation(gl::FUNC_ADD);
-            gl::BlendFunc(gl::ONE, gl::ONE);
-
-            // gl::ClearColor(0., 0., 0., 1.0);
-            gl::Clear(gl::COLOR_BUFFER_BIT);
-            // r2d.end_scene();
+            gl::BlendFunc(gl::SRC_ALPHA, gl::ZERO);
             txr.flush(&camera);
             cur.draw(&camera);
         }

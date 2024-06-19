@@ -2,7 +2,7 @@
 
 uniform uint BezierResolution;
 
-out vec4 TintColor;
+out vec4 color;
 out vec2 TexCoord;
 
 struct BezierData {
@@ -29,5 +29,5 @@ void main() {
     BezierData bezier = Beziers[index];
 
     gl_Position = vec4(getPosition(vertex, bezier), 0.0, 1.0);
-    TintColor = bezier.col;
+    color = bezier.col;
 }

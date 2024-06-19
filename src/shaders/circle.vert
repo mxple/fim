@@ -1,8 +1,10 @@
 #version 430 core
 
 uniform uint CircleResolution;
+uniform mat4 uView;
+uniform mat4 uProj;
 
-out vec4 TintColor;
+out vec4 color;
 out vec2 TexCoord;
 
 struct CircleData {
@@ -36,6 +38,6 @@ void main() {
 	// 0, 0.01
  //    );
 
-    gl_Position = vec4((circle.position_rad.xy + scaleMat * getPosition(vertex)), circle.position_rad.w, 1.0);
-    TintColor = circle.tintCol;
+    gl_Position = uProj * uView * vec4((circle.position_rad.xy + scaleMat * getPosition(vertex)), 0., 1.0);
+    color = circle.tintCol;
 }

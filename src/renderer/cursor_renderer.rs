@@ -10,7 +10,7 @@ use crate::{
 };
 
 use super::{
-    camera::Camera, shader::Program, vertex_array::VertexArray, vertex_buffer::VertexBuffer,
+    camera::Camera, primitive_renderer::PrimitiveRenderer, shader::Program, vertex_array::VertexArray, vertex_buffer::VertexBuffer
 };
 
 pub struct CursorRenderer {
@@ -144,4 +144,42 @@ impl CursorRenderer {
             (y + h / 2.) + duration * (yp - (y + h / 2.)),
         )
     }
+
+    // pub fn draw_circular_cursor1(&mut self, &mut pr: PrimitiveRenderer) {
+    //     let mut prev = glam::vec2(cb.front().unwrap().0, cb.front().unwrap().1);
+    //     let mut iter = (&cb).into_iter();
+    //     iter.next();
+    //     for (ww, (xx, yy)) in iter.enumerate() {
+    //         let curr = glam::vec2(*xx, *yy);
+    //         let rad = w/2. * (1.-ww as f32 / 10.);
+    //         
+    //         let unit = (prev - curr).normalize().yx() * rad;
+    //         pr.draw_quad(&[curr + unit, prev + unit, prev - unit, curr - unit], glam::Vec3::ONE);
+    //         pr.draw_circle(curr, glam::Vec3::ONE, rad);
+    //
+    //
+    //         prev = curr;
+    //     }
+    // }
+    //
+    // pub fn draw_circular_cursor2(&mut self, &mut pr: PrimitiveRenderer) {
+    //     trail[0] = (x + w/2., y + h/4.);
+    //     for i in 0..trail.len() - 1 {
+    //         let (first, second) = trail.split_at_mut(i + 1);
+    //         let a = &mut first[i];
+    //         let b = &mut second[0];
+    //         b.0 -= (b.0 - a.0) * 0.6;
+    //         b.1 -= (b.1 - a.1) * 0.6;
+    //
+    //         let curr = glam::vec2(a.0, a.1);
+    //         let next = glam::vec2(b.0, b.1);
+    //         let radc = w/2. * (1.- i as f32 / 30.);
+    //         let radn = w/2. * (1.- (i+1) as f32 / 30.);
+    //         let unitc = (next-curr).normalize().yx() * radc;
+    //         let unitn = (next-curr).normalize().yx() * radn;
+    //
+    //         pr.draw_quad(&[curr + unitc, next + unitn, next - unitn, curr - unitc], glam::Vec3::ONE);
+    //         pr.draw_circle(curr, glam::Vec3::ONE, radc);
+    //     }
+    // }
 }
