@@ -33,4 +33,6 @@ Pull requests are appreciated! Especailly those that check off the todolist.
 ## Screenshots
 ![2024-06-18-212814_hyprshot](https://github.com/mxple/fim/assets/83033020/eba72f1b-fdc3-48b6-b4b6-418619908db8)
 ![2024-06-17-165616_hyprshot](https://github.com/mxple/fim/assets/83033020/6792ede3-40d8-4d82-bae2-f4c1263b545d)
-[video demo](https://github.com/mxple/fim/assets/83033020/57495d11-1915-4375-ab59-2c1d6f85fc3)
+
+
+https://github.com/mxple/fim/assets/83033020/dea21883-b6b7-48aa-ab7b-2762c3b770de
