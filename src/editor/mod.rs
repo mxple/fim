@@ -4,7 +4,7 @@ use sdl2::keyboard::{Keycode, Mod};
 
 pub mod buffer;
 
-use buffer::Buffers;
+use buffer::{Buffers, Line};
 
 #[derive(Eq, PartialEq)]
 pub enum Mode {
@@ -74,8 +74,7 @@ impl Editor {
                 if buf.line_count() == 1 {
                     buf.delete_text(0..);
                     buf.move_cursor_by(0, 0, true);
-                } else {
-                    buf.delete_line_curr();
+                } else { buf.delete_line_curr();
                 }
             }
             Keycode::H => {
@@ -187,7 +186,7 @@ impl Editor {
         // }
     }
 
-    pub fn get_text(&self) -> String {
+    pub fn get_text_newlines(&self) -> String {
         let mut result = String::new();
         for s in &self.buffers.curr_buffer().lines {
             result.push_str(&s.content);
@@ -195,6 +194,10 @@ impl Editor {
         }
         result.pop();
         result
+    }
+
+    pub fn get_text(&self) -> &Vec<Line> {
+        &self.buffers.curr_buffer().lines
     }
 
     pub fn get_cursor(&self) -> (u32, u32) {

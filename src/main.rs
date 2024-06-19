@@ -1,11 +1,14 @@
 use std::{env, io, sync::LazyLock, time::Instant};
 use syntect::easy::HighlightLines;
+use syntect::highlighting::{Style, ThemeSet};
 use syntect::parsing::SyntaxSet;
-use syntect::highlighting::{ThemeSet, Style};
 use syntect::util::{as_24_bit_terminal_escaped, LinesWithEndings};
 
 use editor::Editor;
-use renderer::{camera::Camera, cursor_renderer::CursorRenderer, text_renderer::TextRenderer, primitive_renderer::PrimitiveRenderer};
+use renderer::{
+    camera::Camera, cursor_renderer::CursorRenderer, primitive_renderer::PrimitiveRenderer,
+    text_renderer::TextRenderer,
+};
 use sdl2::rect::Rect;
 extern crate freetype as ft;
 extern crate gl;
@@ -50,8 +53,6 @@ fn main() {
     gl_attr.set_double_buffer(true); // Enable double buffering
     gl_attr.set_multisample_buffers(1); // Enable multisampling if desired
 
-
-
     // let display_mode = video_subsystem.current_display_mode(0).unwrap();
     // let sw2 = display_mode.w / 2;
     // let sh2 = display_mode.h / 2;
@@ -59,6 +60,8 @@ fn main() {
     // load these once at the start of your program
     let ps = SyntaxSet::load_defaults_newlines();
     let ts = ThemeSet::load_defaults();
+    let syntax = ps.find_syntax_by_extension("rs").unwrap();
+    let mut h = HighlightLines::new(syntax, &ts.themes["base16-mocha.dark"]);
 
     // load renderer(s)
     // let mut r2d = Renderer::new();
@@ -89,36 +92,24 @@ fn main() {
             // dbg!(&event);
             match event {
                 sdl2::event::Event::Quit { .. } => break 'main_loop,
-                sdl2::event::Event::TextInput {
-                    text,
-                    ..
-                } => {
+                sdl2::event::Event::TextInput { text, .. } => {
                     editor.handle_text_input(&text);
                 }
                 sdl2::event::Event::KeyDown {
-                    keycode,
-                    keymod,
-                    ..
+                    keycode, keymod, ..
                 } => {
                     editor.handle_keypress(keycode.unwrap(), keymod, &mut skip_events);
                 }
-                sdl2::event::Event::MouseWheel {
-                    precise_y, ..
-                } => {
+                sdl2::event::Event::MouseWheel { precise_y, .. } => {
                     cam_z += cam_z * precise_y * 0.1;
                     camera.update_view();
                 }
-                sdl2::event::Event::Window {
-                    win_event,
-                    ..
-                } => {
-                    match win_event {
-                        sdl2::event::WindowEvent::Resized(w, h) => {
-                            camera.set_perspective(3.14/4., w as f32/h as f32)
-                        }
-                        _ => (),
+                sdl2::event::Event::Window { win_event, .. } => match win_event {
+                    sdl2::event::WindowEvent::Resized(w, h) => {
+                        camera.set_perspective(3.14 / 4., w as f32 / h as f32)
                     }
-                }
+                    _ => (),
+                },
                 _ => (),
             }
         }
@@ -138,11 +129,23 @@ fn main() {
         //     win_y as f32 / sh2 as f32 * 8.,
         //     &editor.get_text(),
         //     20., Some(editor.get_cursor()));
-        let (mut x, mut y, w, h) =
-            txr.draw_text(0., 0., &editor.get_text(), f32::MAX, Some(editor.get_cursor()));
+        // let (mut x, mut y, w, h) =
+        //     txr.draw_text(0., 0., &editor.get_text_newlines(), f32::MAX, Some(editor.get_cursor()));
+        // dbg!(&ts.themes.keys());
+        for line in editor.get_text() {
+            // LinesWithEndings enables use of newlines mode
+            let ranges: Vec<(Style, &str)> = h.highlight_line(&line.content, &ps).unwrap();
+            for r in &ranges {
+                txr.type_writer(r.1, r.0.foreground);
+            }
+            txr.typewriter_new_line();
+        }
+        txr.reset_typewriter();
 
-        x = editor.get_cursor().1 as f32 * txr.advance;
-        y = (editor.get_cursor().0 - 1) as f32 * -txr.height;
+        let x = editor.get_cursor().1 as f32 * txr.advance;
+        let y = (editor.get_cursor().0 - 1) as f32 * -txr.height;
+        let w = txr.advance;
+        let h = txr.height;
 
         cursor_prev = cur.draw_cursor_at(x, y - 0.2, w, h, cursor_prev.0, cursor_prev.1);
 
@@ -173,10 +176,9 @@ fn main() {
             cur.draw(&camera);
         }
 
-
-        window.gl_swap_window();
         let end = Instant::now();
-        // println!("Time taken: {}", (end - start).as_micros());
+        window.gl_swap_window();
+        println!("Time taken: {}", (end - start).as_micros());
         start = Instant::now();
     }
     // free resources

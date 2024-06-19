@@ -7,8 +7,10 @@ uniform mat4 uProj;
 out vec2 uv;
 flat out uint start;
 flat out uint count;
+out vec4 color;
 
 struct QuadData {
+    vec4 color;
     vec2 pos;
     vec2 uv0;
     vec2 uv1;
@@ -45,5 +47,6 @@ void main() {
     uv = uvs[vertex];
     start = quad.start;
     count = quad.count;
+    color = quad.color;
 }
 

@@ -1,5 +1,7 @@
 use std::{collections::HashMap, ffi::CString, os::raw::c_void, time::Instant};
 
+use syntect::highlighting::Color;
+
 use crate::{
     renderer::{
         index_buffer::IndexBuffer,
@@ -15,8 +17,10 @@ use super::{
     vertex_array::VertexArray,
 };
 
+// #[repr(align(64))]
 #[allow(dead_code)]
 struct QuadData {
+    color: glam::Vec4,
     pos: glam::Vec2,
     uv0: glam::Vec2,
     uv1: glam::Vec2,
@@ -39,6 +43,10 @@ pub struct TextRenderer {
 
     pub advance: f32,
     pub height: f32,
+
+    // for typewriter mode
+    curr_x: f32,
+    curr_y: f32
 }
 
 const MAX_QUADS: usize = 100000;
@@ -127,6 +135,9 @@ impl TextRenderer {
 
             advance,
             height,
+
+            curr_x: 0.,
+            curr_y: 0.,
         }
     }
 
@@ -167,17 +178,17 @@ impl TextRenderer {
                 );
             }
 
-            let uniform_name = CString::new("uTime").unwrap();
-            let uniform_location =
-                gl::GetUniformLocation(self.text_shader.id(), uniform_name.as_ptr());
-            if uniform_location == -1 {
-                println!("Failed to find uniform location for uTime");
-            } else {
-                gl::Uniform1f(
-                    uniform_location,
-                    (Instant::now() - *START_TIME).as_secs_f32(),
-                );
-            }
+            // let uniform_name = CString::new("uTime").unwrap();
+            // let uniform_location =
+            //     gl::GetUniformLocation(self.text_shader.id(), uniform_name.as_ptr());
+            // if uniform_location == -1 {
+            //     println!("Failed to find uniform location for uTime");
+            // } else {
+            //     gl::Uniform1f(
+            //         uniform_location,
+            //         (Instant::now() - *START_TIME).as_secs_f32(),
+            //     );
+            // }
         }
         unsafe {
             gl::BindBuffer(gl::SHADER_STORAGE_BUFFER, self.quad_ssbo);
@@ -241,35 +252,8 @@ impl TextRenderer {
         }
     }
 
-    // additionally returns cursor position and size if given the line pos and char pos of the cursor
-    pub fn draw_text(
-        &mut self,
-        mut x: f32,
-        mut y: f32,
-        text: &str,
-        wrap: f32,
-        cursor_pos: Option<(u32, u32)>,
-    ) -> (f32, f32, f32, f32) {
+    pub fn type_writer(&mut self, text: &str, color: Color) {
         self.prep_text(text);
-
-        let original_x = x;
-        let mut found_char = false;
-
-        // cursor width is space width or null char width if space not found
-        let mut cursor_w = self
-            .glyph_map
-            .get(&(' ' as u32))
-            .unwrap_or(self.glyph_map.get(&0_u32).unwrap())
-            .advance;
-
-        let mut cursor_x = x;
-        let mut cursor_y = y;
-        let mut last_y = y;
-
-        let mut line = 1;
-        let mut char = 0;
-        let cursor_line = cursor_pos.unwrap_or((u32::MAX, u32::MAX)).0;
-        let cursor_char = cursor_pos.unwrap_or((u32::MAX, u32::MAX)).1;
 
         // let mut prev_glyph_index: u32 = 0;
         for c in text.chars() {
@@ -279,49 +263,20 @@ impl TextRenderer {
                 .get(&(c as u32))
                 .unwrap_or(self.glyph_map.get(&0_u32).unwrap());
 
-            // FOUND yay
-            if !found_char && line == cursor_line && char == cursor_char {
-                found_char = true;
-                cursor_x = x;
-                cursor_y = y;
-                cursor_w = glyph.advance;
-            }
-
-            if !found_char && line == cursor_line + 1 {
-                found_char = true; // pseudo true
-                cursor_x = original_x;
-                cursor_y = last_y;
-                cursor_w = glyph.advance;
+            if c == '\n' {
+                self.curr_x = 0.;
+                self.curr_y -= self.height;
+                continue;
             }
 
             if c == '\r' {
                 continue;
             }
 
-            if c == '\n' {
-                x = original_x;
-                last_y = y;
-                y -= self.height;
-                char = 0;
-                line += 1;
-                continue;
-            }
-
-            // kerning not going to be supported
-
-            char += 1;
-
-            if x > wrap && glyph.count == 0 {
-                x = original_x;
-                last_y = y;
-                y -= self.height;
-                continue;
-            }
-
             if glyph.count != 0 {
                 // neccessary for glyphs like g p q
                 self.quad_data.push(QuadData {
-                    pos: glam::Vec2 { x, y },
+                    pos: glam::Vec2 { x: self.curr_x, y: self.curr_y },
                     uv0: glam::Vec2 {
                         x: glyph.bearing_x,
                         y: (glyph.bearing_y - glyph.height),
@@ -332,17 +287,126 @@ impl TextRenderer {
                     },
                     start: glyph.start as u32,
                     count: glyph.count as u32,
+                    color: glam::vec4(color.r as f32 / 255., color.g as f32 / 255., color.b as f32 / 255., color.a as f32 / 255.),
                 });
             }
             // x += glyph.advance;
-            x += self.advance;
+            self.curr_x += self.advance;
         }
-        if !found_char {
-            cursor_x = x;
-            cursor_y = y;
-        }
-        // (cursor_x, cursor_y, cursor_w, self.height)
-        (cursor_x, cursor_y, self.advance, self.height)
+    }
+    
+    pub fn reset_typewriter(&mut self) {
+        self.curr_x = 0.;
+        self.curr_y = 0.;
     }
 
+    pub fn typewriter_new_line(&mut self) {
+        self.curr_x = 0.;
+        self.curr_y -= self.height;
+    }
+
+    // additionally returns cursor position and size if given the line pos and char pos of the cursor
+    // pub fn draw_text(
+    //     &mut self,
+    //     mut x: f32,
+    //     mut y: f32,
+    //     text: &str,
+    //     wrap: f32,
+    //     cursor_pos: Option<(u32, u32)>,
+    // ) -> (f32, f32, f32, f32) {
+    //     self.prep_text(text);
+    //
+    //     let original_x = x;
+    //     let mut found_char = false;
+    //
+    //     // cursor width is space width or null char width if space not found
+    //     let mut cursor_w = self
+    //         .glyph_map
+    //         .get(&(' ' as u32))
+    //         .unwrap_or(self.glyph_map.get(&0_u32).unwrap())
+    //         .advance;
+    //
+    //     let mut cursor_x = x;
+    //     let mut cursor_y = y;
+    //     let mut last_y = y;
+    //
+    //     let mut line = 1;
+    //     let mut char = 0;
+    //     let cursor_line = cursor_pos.unwrap_or((u32::MAX, u32::MAX)).0;
+    //     let cursor_char = cursor_pos.unwrap_or((u32::MAX, u32::MAX)).1;
+    //
+    //     // let mut prev_glyph_index: u32 = 0;
+    //     for c in text.chars() {
+    //         // we check for unknown characters behorehand
+    //         let glyph = self
+    //             .glyph_map
+    //             .get(&(c as u32))
+    //             .unwrap_or(self.glyph_map.get(&0_u32).unwrap());
+    //
+    //         // FOUND yay
+    //         if !found_char && line == cursor_line && char == cursor_char {
+    //             found_char = true;
+    //             cursor_x = x;
+    //             cursor_y = y;
+    //             cursor_w = glyph.advance;
+    //         }
+    //
+    //         if !found_char && line == cursor_line + 1 {
+    //             found_char = true; // pseudo true
+    //             cursor_x = original_x;
+    //             cursor_y = last_y;
+    //             cursor_w = glyph.advance;
+    //         }
+    //
+    //         if c == '\r' {
+    //             continue;
+    //         }
+    //
+    //         if c == '\n' {
+    //             x = original_x;
+    //             last_y = y;
+    //             y -= self.height;
+    //             char = 0;
+    //             line += 1;
+    //             continue;
+    //         }
+    //
+    //         // kerning not going to be supported
+    //
+    //         char += 1;
+    //
+    //         if x > wrap && glyph.count == 0 {
+    //             x = original_x;
+    //             last_y = y;
+    //             y -= self.height;
+    //             continue;
+    //         }
+    //
+    //         if glyph.count != 0 {
+    //             // neccessary for glyphs like g p q
+    //             self.quad_data.push(QuadData {
+    //                 pos: glam::Vec2 { x, y },
+    //                 uv0: glam::Vec2 {
+    //                     x: glyph.bearing_x,
+    //                     y: (glyph.bearing_y - glyph.height),
+    //                 },
+    //                 uv1: glam::Vec2 {
+    //                     x: (glyph.bearing_x + glyph.width),
+    //                     y: glyph.bearing_y,
+    //                 },
+    //                 start: glyph.start as u32,
+    //                 count: glyph.count as u32,
+    //                 color: glam::vec4(1.0, 1.0, 1.0, 1.0),
+    //             });
+    //         }
+    //         // x += glyph.advance;
+    //         x += self.advance;
+    //     }
+    //     if !found_char {
+    //         cursor_x = x;
+    //         cursor_y = y;
+    //     }
+    //     // (cursor_x, cursor_y, cursor_w, self.height)
+    //     (cursor_x, cursor_y, self.advance, self.height)
+    // }
 }

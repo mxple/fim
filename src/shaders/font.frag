@@ -12,11 +12,10 @@ layout(std430, binding = 1) readonly buffer CurvesBuffer {
     Curve curves[];
 };
 
-const vec3 tintColor = vec3(1., 1., 1.);
-
 in vec2 uv;
 flat in uint start;
 flat in uint count;
+in vec4 color;
 
 out vec4 result;
 
@@ -109,7 +108,7 @@ void main() {
         alpha -= computeCoverage(inverseDiameter.y, rotate(p0), rotate(p1), rotate(p2));
     }
 
-    vec4 color = transColor(uTime);
+    // vec4 color = transColor(uTime);
     alpha = clamp(0.5 * alpha, 0.0, 1.0);
     result = color * alpha;
     // result = rainbowColor * alpha;
