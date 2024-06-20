@@ -214,11 +214,11 @@ impl PrimitiveRenderer {
         self.bezier_data.clear();
     }
 
-    pub fn end_scene(&mut self, cam: &Camera) {
+    pub fn end_scene(&self, cam: &Camera) {
         unsafe { self.flush(cam) };
     }
 
-    pub unsafe fn flush(&mut self, cam: &Camera) {
+    pub unsafe fn flush(&self, cam: &Camera) {
         self.circle_vao.bind();
         self.circle_shader.bind();
 
@@ -359,7 +359,7 @@ impl PrimitiveRenderer {
             return;
         }
         self.circle_data.push(CircleData {
-            pos_rad: glam::Vec4::new(pos.x, pos.y, 0.0, rad),
+            pos_rad: glam::Vec4::new(pos.x, pos.y, 4.0, rad),
             col: glam::Vec4::new(col.x, col.y, col.z, 1.0),
         });
     }

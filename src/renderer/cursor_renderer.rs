@@ -1,5 +1,7 @@
 use std::{ffi::CString, time::Instant};
 
+use circular_buffer::CircularBuffer;
+
 use crate::{
     renderer::{
         buffer_utils::{BufferElement, BufferLayout, ShaderDataType},
@@ -10,12 +12,17 @@ use crate::{
 };
 
 use super::{
-    camera::Camera, primitive_renderer::PrimitiveRenderer, shader::Program, vertex_array::VertexArray, vertex_buffer::VertexBuffer
+    camera::Camera, primitive_renderer::PrimitiveRenderer, shader::Program,
+    vertex_array::VertexArray, vertex_buffer::VertexBuffer,
 };
 
 pub struct CursorRenderer {
     cursor_vao: VertexArray,
     cursor_shader: Program,
+
+    cursor_prev: glam::Vec2,
+    cursor_prev_prev: glam::Vec2,
+    trail_loc: glam::Vec2,
 }
 
 impl CursorRenderer {
@@ -53,6 +60,10 @@ impl CursorRenderer {
         Self {
             cursor_vao,
             cursor_shader,
+
+            cursor_prev: glam::vec2(0., 0.),
+            cursor_prev_prev: glam::vec2(0., 0.),
+            trail_loc: glam::vec2(0., 0.),
         }
     }
 
@@ -61,7 +72,8 @@ impl CursorRenderer {
         self.cursor_vao.bind();
 
         let uniform_name = CString::new("uView").unwrap();
-        let uniform_location = gl::GetUniformLocation(self.cursor_shader.id(), uniform_name.as_ptr());
+        let uniform_location =
+            gl::GetUniformLocation(self.cursor_shader.id(), uniform_name.as_ptr());
         if uniform_location == -1 {
             println!("Failed to find uniform location for uView");
         } else {
@@ -74,7 +86,8 @@ impl CursorRenderer {
         }
 
         let uniform_name = CString::new("uProj").unwrap();
-        let uniform_location = gl::GetUniformLocation(self.cursor_shader.id(), uniform_name.as_ptr());
+        let uniform_location =
+            gl::GetUniformLocation(self.cursor_shader.id(), uniform_name.as_ptr());
         if uniform_location == -1 {
             println!("Failed to find uniform location for uProj");
         } else {
@@ -103,21 +116,26 @@ impl CursorRenderer {
         gl::DrawElements(gl::TRIANGLES, 30, gl::UNSIGNED_INT, std::ptr::null());
     }
 
-    pub fn draw_cursor_at(
-        &mut self,
-        x: f32,
-        y: f32,
-        w: f32,
-        h: f32,
-        xp: f32,
-        yp: f32,
-    ) -> (f32, f32) {
-        let thickness = 10.;
-        let length = 0.1;
-        let duration = 0.85;
-        let xf = (x + w / 2.) + thickness * (xp - (x + w / 2.));
-        let yf = (y + h / 2.) + thickness * (yp - (y + h / 2.));
-        // yp = (y+h/2.) + s * (yp - (y+h/2.));
+    pub fn draw_cursor_at(&mut self, x: f32, y: f32, w: f32, h: f32) {
+        let cursor_curr = glam::vec2(x + w / 2., y + h / 2.);
+        if self.cursor_prev != cursor_curr {
+            self.cursor_prev_prev = self.cursor_prev;
+            let dist = (cursor_curr).distance(self.cursor_prev);
+            self.trail_loc = cursor_curr + (self.cursor_prev - cursor_curr).normalize() * dist.powf(0.9);
+        }
+        self.cursor_prev = cursor_curr;
+
+        let thickness = 2.;
+        let length = 0.5;
+        let xf = cursor_curr.x + thickness * (self.trail_loc.x - cursor_curr.x);
+        let yf = cursor_curr.y + thickness * (self.trail_loc.y - cursor_curr.y);
+
+        // let dist2 = (self.trail_loc.0 - cursor_curr.0) * (self.trail_loc.0 - cursor_curr.0)
+        //     + (self.trail_loc.1 - cursor_curr.1) * (self.trail_loc.1 - cursor_curr.1);
+        // let lerp_factor = (dist2 / 10.).clamp(0., 0.9);
+        let lerp_factor = 0.125;
+        self.trail_loc -= (self.trail_loc - cursor_curr) * lerp_factor;
+
         self.cursor_vao.bind();
         let vbo = self.cursor_vao.get_vbo_mut().get_mut(0).unwrap();
         vbo.set_data(&[
@@ -138,48 +156,5 @@ impl CursorRenderer {
             (x + w) + length * (xf - (x + w)),
             (y + h) + length * (yf - (y + h)),
         ]);
-        // vbo.set_data(&[0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0]);
-        (
-            (x + w / 2.) + duration * (xp - (x + w / 2.)),
-            (y + h / 2.) + duration * (yp - (y + h / 2.)),
-        )
     }
-
-    // pub fn draw_circular_cursor1(&mut self, &mut pr: PrimitiveRenderer) {
-    //     let mut prev = glam::vec2(cb.front().unwrap().0, cb.front().unwrap().1);
-    //     let mut iter = (&cb).into_iter();
-    //     iter.next();
-    //     for (ww, (xx, yy)) in iter.enumerate() {
-    //         let curr = glam::vec2(*xx, *yy);
-    //         let rad = w/2. * (1.-ww as f32 / 10.);
-    //         
-    //         let unit = (prev - curr).normalize().yx() * rad;
-    //         pr.draw_quad(&[curr + unit, prev + unit, prev - unit, curr - unit], glam::Vec3::ONE);
-    //         pr.draw_circle(curr, glam::Vec3::ONE, rad);
-    //
-    //
-    //         prev = curr;
-    //     }
-    // }
-    //
-    // pub fn draw_circular_cursor2(&mut self, &mut pr: PrimitiveRenderer) {
-    //     trail[0] = (x + w/2., y + h/4.);
-    //     for i in 0..trail.len() - 1 {
-    //         let (first, second) = trail.split_at_mut(i + 1);
-    //         let a = &mut first[i];
-    //         let b = &mut second[0];
-    //         b.0 -= (b.0 - a.0) * 0.6;
-    //         b.1 -= (b.1 - a.1) * 0.6;
-    //
-    //         let curr = glam::vec2(a.0, a.1);
-    //         let next = glam::vec2(b.0, b.1);
-    //         let radc = w/2. * (1.- i as f32 / 30.);
-    //         let radn = w/2. * (1.- (i+1) as f32 / 30.);
-    //         let unitc = (next-curr).normalize().yx() * radc;
-    //         let unitn = (next-curr).normalize().yx() * radn;
-    //
-    //         pr.draw_quad(&[curr + unitc, next + unitn, next - unitn, curr - unitc], glam::Vec3::ONE);
-    //         pr.draw_circle(curr, glam::Vec3::ONE, radc);
-    //     }
-    // }
 }
