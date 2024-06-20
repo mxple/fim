@@ -1,6 +1,5 @@
-use std::{env, io, sync::LazyLock, time::Instant};
-use circular_buffer::CircularBuffer;
-use glam::Vec2Swizzles;
+use std::{env, sync::LazyLock, time::Instant};
+use configuration::{Config, CONFIG};
 use sdl2::libc::sleep;
 use syntect::easy::HighlightLines;
 use syntect::parsing::SyntaxSet;
@@ -14,12 +13,17 @@ extern crate freetype as ft;
 extern crate gl;
 extern crate sdl2;
 
-pub mod editor;
-pub mod renderer;
+mod editor;
+mod renderer;
+mod configuration;
 
 static START_TIME: LazyLock<Instant> = LazyLock::new(|| Instant::now());
 
 fn main() {
+    let config_path = "example.conf";
+    let config = Config::new(config_path);
+    CONFIG.set(config).expect("Config already set");
+
     let _ = *START_TIME;
 
     let args: Vec<String> = env::args().collect();
