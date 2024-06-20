@@ -143,7 +143,7 @@ void main() {
 //         p2.x += diameter.x / 2.;
 //         alpha -= computeCoverage(inverseDiameter.y, p0, p1, p2);
 //     }
-    vec4 color = transColor(uTime);
+    vec3 color = transColor(uTime);
     alpha = clamp(0.5 * alpha, 0.0, 1.0);
-    result = color * alpha;
+    result = vec4(color, alpha);
 }
