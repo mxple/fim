@@ -20,7 +20,7 @@ flat in uint count;
 
 out vec4 result;
 
-vec4 transColor(float uTime) {
+vec3 transColor(float uTime) {
     float x = gl_FragCoord.x / 600 * 0.96592582628 + gl_FragCoord.y / 800 * 0.2588190451;
     
     // Add animation based on time (uTime)
@@ -41,7 +41,7 @@ vec4 transColor(float uTime) {
     x *= 4;
     x -= floor(x);
 
-    return vec4( (1-x) * col1 + x * col2, 1.);
+    return vec3( (1-x) * col1 + x * col2 );
 }
 
 float computeCoverage(float inverseDiameter, vec2 p0, vec2 p1, vec2 p2) {
@@ -109,11 +109,10 @@ void main() {
         alpha -= computeCoverage(inverseDiameter.x, p0, p1, p2);
         alpha -= computeCoverage(inverseDiameter.y, rotate(p0), rotate(p1), rotate(p2));
     }
-
 //     for (int i = 0; i < count; i++) {
 //         Curve curve = curves[start + i];
 //
-//         vec2 p0 = curve.p0 - uv;
+//         vec2 p0 = curve.pMade cursor 0 - uv;
 //         vec2 p1 = curve.p1 - uv;
 //         vec2 p2 = curve.p2 - uv;
 //

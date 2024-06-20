@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+circular-buffer = "0.1.7"
 font-kit = "0.13.2"
 # freetype-rs = "0.36.0"
 freetype-rs = { path = "../freetype-rs" }
