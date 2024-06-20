@@ -37,6 +37,7 @@ pub struct TextRenderer {
     curve_data: Vec<Curve>,
     glyph_map: HashMap<u32, GlyphData>,
 
+    dilation: f32,
     pub advance: f32,
     pub height: f32,
 }
@@ -47,11 +48,12 @@ impl TextRenderer {
     pub fn new(main_font_name: &str) -> Self {
         let mut curve_data: Vec<Curve> = Vec::new();
         let mut glyph_map: HashMap<u32, GlyphData> = HashMap::new();
+        let mut dilation = 0.;
         let mut advance = 0.;
         let mut height = 0.;
 
         let mut font_manager = FontManager::new();
-        font_manager.load_main_font(main_font_name, &mut curve_data, &mut glyph_map, &mut advance, &mut height);
+        font_manager.load_main_font(main_font_name, &mut curve_data, &mut glyph_map, &mut dilation, &mut advance, &mut height);
         font_manager.prepare_fallback_fonts();
 
         let vert_shader = Shader::from_source(
@@ -125,6 +127,7 @@ impl TextRenderer {
             curve_data,
             glyph_map,
 
+            dilation,
             advance,
             height,
         }
@@ -319,16 +322,15 @@ impl TextRenderer {
             }
 
             if glyph.count != 0 {
-                // neccessary for glyphs like g p q
                 self.quad_data.push(QuadData {
                     pos: glam::Vec2 { x, y },
                     uv0: glam::Vec2 {
-                        x: glyph.bearing_x,
-                        y: (glyph.bearing_y - glyph.height),
+                        x: glyph.bearing_x - self.dilation,
+                        y: (glyph.bearing_y - glyph.height - self.dilation),
                     },
                     uv1: glam::Vec2 {
-                        x: (glyph.bearing_x + glyph.width),
-                        y: glyph.bearing_y,
+                        x: (glyph.bearing_x + glyph.width + self.dilation),
+                        y: glyph.bearing_y + self.dilation,
                     },
                     start: glyph.start as u32,
                     count: glyph.count as u32,

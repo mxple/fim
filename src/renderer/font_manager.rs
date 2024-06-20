@@ -63,6 +63,7 @@ impl FontManager {
         name: &str,
         curve_data: &mut Vec<Curve>,
         glyph_map: &mut HashMap<u32, GlyphData>,
+        dilation: &mut f32,
         advance: &mut f32,
         height: &mut f32,
     ) {
@@ -91,6 +92,7 @@ impl FontManager {
         }
 
         let em_size = face.em_size() as f32;
+        *dilation = 0.5 / em_size;
         *height = face.height() as f32 / em_size;
 
         let load_flags = ft::face::LoadFlag::NO_SCALE
