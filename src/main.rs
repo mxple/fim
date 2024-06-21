@@ -69,7 +69,7 @@ fn main() {
 
     // load renderer(s)
     let mut r2d = PrimitiveRenderer::new();
-    let mut txr = TextRenderer::new("Free Mono");
+    let mut txr = TextRenderer::new(&unsafe { CONFIG.get().unwrap_unchecked() }.general.font);
     let mut cur = CursorRenderer::new();
 
     let mut camera = Camera::new(

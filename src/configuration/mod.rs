@@ -5,6 +5,9 @@ use std::sync::OnceLock;
 pub static CONFIG: OnceLock<Config> = OnceLock::new();
 
 static DEFAULT_CONF: Config = Config {
+    general: GeneralConfig {
+        font: String::new(),
+    },
     camera: CameraConfig {
         follow_strength: 0.3,
         lookat_strength: 0.1,
@@ -14,6 +17,11 @@ static DEFAULT_CONF: Config = Config {
         lerp_factor: 0.1,
     },
 };
+
+#[derive(Debug, Clone)]
+pub struct GeneralConfig {
+    pub font: String,
+}
 
 #[derive(Debug, Clone)]
 pub struct CameraConfig {
@@ -27,8 +35,9 @@ pub struct CursorConfig {
     pub lerp_factor: f32,
 }
 
-#[derive(Debug, Clone)]
-pub struct Config {
+#[derive(Debug, Clone)] 
+pub struct Config { 
+    pub general: GeneralConfig,
     pub camera: CameraConfig,
     pub cursor: CursorConfig,
 }
@@ -50,6 +59,7 @@ impl Config {
 }
 
 enum Section {
+    General,
     Camera,
     Cursor,
     None,
@@ -58,6 +68,7 @@ enum Section {
 impl fmt::Display for Section {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
+            Section::General => write!(f, "[General]"),
             Section::Camera => write!(f, "[Camera]"),
             Section::Cursor => write!(f, "[Cursor]"),
             Section::None => write!(f, "None"),
@@ -89,6 +100,9 @@ fn parse(contents: &str) -> Config {
         // check if line is section heading
         if line.starts_with("[") && line.ends_with("]") {
             match line {
+                "[General]" => {
+                    section = Section::General;
+                }
                 "[Camera]" => {
                     section = Section::Camera;
                 }
@@ -111,19 +125,23 @@ fn parse(contents: &str) -> Config {
             continue;
         }
 
-        let value: Vec<&str> = tokens[1].split_whitespace().collect();
-
-        if value.len() != 1 {
-            println!(
-                "Unable to parse line {} of config:\n{}\nCannot parse value",
-                num + 1,
-                line
-            );
-            continue;
-        }
-
         // we finally have a possibly valid key-value pair
         match section {
+            Section::General=> {
+                match tokens[0] {
+                    "font" => {
+                        let maybe = tokens[1].parse::<String>();
+                        if maybe.is_ok() {
+                            conf.general.font = maybe.unwrap();
+                        } else {
+                            println!("Could not parse value: '{}' for font (line {})", tokens[1], num + 1);
+                        }
+                    }
+                    _ => {
+                        println!("Variable {}.{} on line {} not a valid config option. Skipping!", section, tokens[0], num + 1);
+                    }
+                }
+            }
             Section::Camera => {
                 match tokens[0] {
                     "follow_strength" => {

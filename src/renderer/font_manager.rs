@@ -70,15 +70,20 @@ impl FontManager {
         let handle = self
             .system_source
             .select_best_match(&[FamilyName::Title(name.into())], &Properties::new())
-            .unwrap_or(
-                SystemSource::new()
-                    .select_best_match(&[FamilyName::Monospace], &Properties::new())
-                    .unwrap_or(Handle::Memory {
-                        bytes: (Vec::from(include_bytes!("../../assets/fonts/FreeMono.otf"))
-                            .into()),
-                        font_index: (0),
-                    }),
+            .unwrap_or_else(|_|
+                {
+                    println!("Unable to find system font, {}", name);
+                    self.system_source
+                        .select_best_match(&[FamilyName::Monospace], &Properties::new())
+                        .unwrap_or(Handle::Memory {
+                            bytes: (Vec::from(include_bytes!("../../assets/fonts/FreeMono.otf"))
+                                .into()),
+                            font_index: (0),
+                        })
+                }
             );
+
+        dbg!(&handle);
 
         let face;
         match handle {
@@ -207,7 +212,7 @@ impl FontManager {
 
         // contours is a list of points where a contour, a collection of bezier curves, ends
         // 0-c_1, c_1-c_2, ... , c_(n-1)-c_n
-        Self::process_contour(curve_data, face.glyph().outline().expect(""), em_size);
+        Self::process_contour(curve_data, face.glyph().outline().unwrap(), em_size);
 
         let g: GlyphData = GlyphData {
             // glyph_index,
