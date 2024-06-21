@@ -158,8 +158,8 @@ fn main() {
         let orig = glam::Vec3::new(x + w / 2., y + h / 4., 0.);
 
         // camera.pos.x -= (camera.pos.x - (orig.x + (win_x  as f32 + ww as f32/2.)/aspect)) * 0.03;
-        camera.pos.x -= (camera.pos.x - orig.x) * 0.03;
-        camera.pos.y -= (camera.pos.y - orig.y) * 0.03;
+        camera.pos.x -= (camera.pos.x - orig.x) * unsafe { CONFIG.get().unwrap_unchecked() }.camera.follow_strength;
+        camera.pos.y -= (camera.pos.y - orig.y) * unsafe { CONFIG.get().unwrap_unchecked() }.camera.follow_strength;
         camera.pos.z = cam_z;
 
         // dbg!(win_x, win_y);
@@ -167,7 +167,7 @@ fn main() {
         //           -win_y as f32/ sh2 as f32 + 1. + orig.y/2., -(win_y + wh as i32) as f32/ sh2 as f32 + 1. + orig.y/2.,
         //           4., 150.);
 
-        camera.to -= (camera.to - orig) * 0.05;
+        camera.to -= (camera.to - orig) * unsafe { CONFIG.get().unwrap_unchecked() }.camera.lookat_strength;
         camera.update_view();
 
         unsafe {

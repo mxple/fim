@@ -3,12 +3,11 @@ use std::{ffi::CString, time::Instant};
 use circular_buffer::CircularBuffer;
 
 use crate::{
-    renderer::{
+    configuration::CONFIG, renderer::{
         buffer_utils::{BufferElement, BufferLayout, ShaderDataType},
         index_buffer::IndexBuffer,
         shader::Shader,
-    },
-    START_TIME,
+    }, START_TIME
 };
 
 use super::{
@@ -121,7 +120,7 @@ impl CursorRenderer {
         if self.cursor_prev != cursor_curr {
             self.cursor_prev_prev = self.cursor_prev;
             let dist = (cursor_curr).distance(self.cursor_prev);
-            self.trail_loc = cursor_curr + (self.cursor_prev - cursor_curr).normalize() * dist.powf(0.9);
+            self.trail_loc = cursor_curr + (self.cursor_prev - cursor_curr).normalize() * dist.powf(unsafe { CONFIG.get().unwrap_unchecked() }.cursor.trail_length);
         }
         self.cursor_prev = cursor_curr;
 
@@ -133,7 +132,7 @@ impl CursorRenderer {
         // let dist2 = (self.trail_loc.0 - cursor_curr.0) * (self.trail_loc.0 - cursor_curr.0)
         //     + (self.trail_loc.1 - cursor_curr.1) * (self.trail_loc.1 - cursor_curr.1);
         // let lerp_factor = (dist2 / 10.).clamp(0., 0.9);
-        let lerp_factor = 0.125;
+        let lerp_factor = unsafe { CONFIG.get().unwrap_unchecked() }.cursor.lerp_factor;
         self.trail_loc -= (self.trail_loc - cursor_curr) * lerp_factor;
 
         self.cursor_vao.bind();

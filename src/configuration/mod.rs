@@ -17,20 +17,20 @@ static DEFAULT_CONF: Config = Config {
 
 #[derive(Debug, Clone)]
 pub struct CameraConfig {
-    follow_strength: f32,
-    lookat_strength: f32,
+    pub follow_strength: f32,
+    pub lookat_strength: f32,
 }
 
 #[derive(Debug, Clone)]
 pub struct CursorConfig {
-    trail_length: f32,
-    lerp_factor: f32,
+    pub trail_length: f32,
+    pub lerp_factor: f32,
 }
 
 #[derive(Debug, Clone)]
 pub struct Config {
-    camera: CameraConfig,
-    cursor: CursorConfig,
+    pub camera: CameraConfig,
+    pub cursor: CursorConfig,
 }
 
 impl Config {
