@@ -82,7 +82,6 @@ fn main() {
     let mut editor = Editor::new(file_path);
 
     
-    let mut cursor_prev: (f32, f32) = (0., 0.);
     let mut cam_z = 20.;
 
     let mut start = Instant::now();

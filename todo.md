@@ -19,10 +19,7 @@
 - Allow configurations:
     - Non mono support
     - Colors
-    - Font
     - Cursor properties
-- Should create a parser (toml?) to load config file
-- Global config state to read from?
 
 ### Finish VIM support
 - Still unsure whether to continue embedding key behavior or to switch to scripting (lua)
@@ -51,7 +48,6 @@
 - title
 
 ### Better cursor visuals
-- Currently only has 2 control points. Having more would be nice.
 - Also improve cursor color + blending
 
 # Code base improvements
